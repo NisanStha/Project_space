@@ -6,25 +6,25 @@
 	int width=80;
 	int gameover=0;
 
-typedef struct
+typedef struct object
 {
     int type,life;
-}object;
+};
 
-typedef struct
+typedef struct coordinate
 {
     int status;  //status=0 null , status=1 something present
-    object obj;
-}coordinate;
+    struct object obj;
+};
 
-	enum eDirection{STOP=0, LEFT,RIGHT,UP,DOWN};
-	enum eDirection dir;
+//	enum eDirection{STOP=0, LEFT,RIGHT,UP,DOWN};
+//	enum eDirection dir;
 
 void main()
-{   struct object *obj = malloc(sizeof(object));
-	struct coordinate *globalco;
-    Draw();
-    drawinit(&globalco,&obj,width,height);
+{
+	struct coordinate globalco[height][width];
+    draw_init_splash();
+    draw_init(globalco);
 		/*while(!gameover){
 			Draw();
 			Input();
@@ -36,7 +36,7 @@ void main()
 		*/
 }
 
-void Draw(){
+void draw_init_splash(){
 		int i,j;
 		system("cls");
 		for (i=1;i<=width;i++)
@@ -63,26 +63,25 @@ void Draw(){
 			else if(i==width) printf("%c",188);           //lower border
 			else printf("%c",205);
 		}
-    /*for(i=0;i<5;i++)                //Splash screen
+    for(i=0;i<5;i++)                //Splash screen
      {  gotoxy(30,10);
         printf("GET READY!!!");
         Sleep(500);
         gotoxy(30,10);
         printf("            ");
         Sleep(500); }
-    */
+
     gotoxy(0,0);
     getch();
 	}
-void drawinit(struct coordinate *globalco,struct object obj,int width,int height)
+void draw_init(struct coordinate globalco[][height])
 {
     int x,y;
     for (y=2;y<=height-1;y++)
     {
         for (x=2;x<=width-2;x++)
         {
-                *globalco->status =0;
-
+            globalco[x][y].status =0;
         }
     }
 }
