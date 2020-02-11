@@ -5,24 +5,26 @@
 	int height=25;
 	int width=80;
 	int gameover=0;
+
 typedef struct
 {
- int type,life;
+    int type,life;
 }object;
+
 typedef struct
 {
- int status;  //status=0 null , status=1 something present
- object obj;
+    int status;  //status=0 null , status=1 something present
+    object obj;
 }coordinate;
 
 	enum eDirection{STOP=0, LEFT,RIGHT,UP,DOWN};
 	enum eDirection dir;
-void drawinit();
+
 void main()
-{
-	coordinate globalco[width][height];
+{   struct object *obj = malloc(sizeof(object));
+	struct coordinate *globalco;
     Draw();
-    drawinit(&globalco,width,height);
+    drawinit(&globalco,&obj,width,height);
 		/*while(!gameover){
 			Draw();
 			Input();
@@ -32,8 +34,8 @@ void main()
 		if(score==300) printf("Congrats You won");                  //score not implemented.....yet
 		else printf("Too bad.... try again");
 		*/
+}
 
-	}
 void Draw(){
 		int i,j;
 		system("cls");
@@ -72,19 +74,16 @@ void Draw(){
     gotoxy(0,0);
     getch();
 	}
-void drawinit(coordinate *globalco,int width,int height)
-{int x,y;
-
+void drawinit(struct coordinate *globalco,struct object obj,int width,int height)
+{
+    int x,y;
     for (y=2;y<=height-1;y++)
     {
         for (x=2;x<=width-2;x++)
-            { globalco[x][y] = malloc(sizeof(coordinate));
-                if (*globalco[x][y]->status !=0 )
-                {
-                    gotoxy(x,y);
-                printf("%d",x);
-                }
-            }
+        {
+                *globalco->status =0;
+
+        }
     }
 }
 /*
