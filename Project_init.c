@@ -25,6 +25,7 @@ void main()
 	struct coordinate globalco[height][width];
     draw_init_splash();
     draw_init(globalco);
+    draw_confirm(globalco);
 		/*while(!gameover){
 			Draw();
 			Input();
@@ -81,7 +82,10 @@ void draw_init(struct coordinate globalco[][height])
     {
         for (x=2;x<=width-2;x++)
         {
-            globalco[x][y].status =0;
+            if(x%2==0)
+                globalco[x][y].status =0;
+            else
+                globalco[x][y].status =1;
         }
     }
 }
@@ -168,3 +172,14 @@ void draw_init(struct coordinate globalco[][height])
 		if(y<0)y=0;
 	}
 */
+void draw_confirm(struct coordinate globalco[][height])
+{
+    int x,y;
+    for (y=2;y<=height-1;y++)
+    {
+        for (x=2;x<=width-2;x++)
+        { gotoxy(x,y);
+            printf("%d",globalco[x][y].status);
+        }
+    }
+}
