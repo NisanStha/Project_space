@@ -71,14 +71,11 @@ void draw_init_splash(){
         gotoxy(30,10);
         printf("            ");
         Sleep(500); }
-
-    gotoxy(0,0);
-    getch();
 	}
 void draw_init(struct coordinate globalco[][height])
 {
     int x,y;
-    for (y=2;y<=height-1;y++)
+    for (y=2;y<=(2+10);y++)
     {
         for (x=2;x<=width-2;x++)
         {
@@ -179,7 +176,8 @@ void draw_confirm(struct coordinate globalco[][height])
     {
         for (x=2;x<=width-2;x++)
         { gotoxy(x,y);
-            printf("%d",globalco[x][y].status);
+            if (globalco[x][y].status==1)
+                printf("E");
         }
     }
 }
