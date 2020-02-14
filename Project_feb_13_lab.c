@@ -24,8 +24,8 @@ void gotoxy(short x, short y)
 typedef struct bullet
 {
     int x,y,dy,last_y;
-    int dead;
-    int used_or_not;       //bullet slot used or not
+    int dead;               //if 1 initiates kill status
+    int used_or_not;        //bullet slot used or not
 };
 
 typedef struct object
@@ -36,41 +36,7 @@ typedef struct object
     int last_x,last_y;
 };
 
-void enemy_move_compute(struct object enemy[],struct object *phantom_left,struct object *phantom_rig)
-{
-    int i;
-    phantom_left->x +=enemy_dir_x;
-    phantom_rig->x  +=enemy_dir_x;
-            gotoxy(2,27);
-            printf("phantom l x :%d",phantom_left->x);
-            printf("phantom r x :%d",phantom_rig->x);
 
-        if (phantom_left->x<1)
-        {   gotoxy(1,26);
-            //printf("phantom l x :%d",phantom_left->x);
-            enemy_dir_y=1;
-            enemy_dir_x=1;
-            phantom_rig->y+=1;
-        }
-        if (phantom_rig->x>56)
-        {
-            enemy_dir_y=1;
-            enemy_dir_x=-1;
-            phantom_rig->y+=1;
-        }
-
-    for (i=0;i<=75;i++)
-    {   enemy[i].last_x=enemy[i].x;
-        enemy[i].last_y=enemy[i].y;
-        enemy[i].x += enemy_dir_x;
-        enemy[i].y += enemy_dir_y;
-    }
-
-    enemy_dir_y=0;
-
-    if (phantom_rig->y==(height))
-        gameover=1;
-}
 void main()
 {
     int i,j;
@@ -78,7 +44,7 @@ void main()
     struct object enemy[76];
     struct object phantom_left;
     struct object phantom_rig;
-    struct bullet player_bullet[player_max_bullet+2];
+    struct bullet player_bullet[100];
 
     init_struct_enemy(enemy,&phantom_left,&phantom_rig);
     draw_init_splash();      // Border and get ready
@@ -97,16 +63,16 @@ void main()
     while(!gameover)
         {
             input();                    //take input
-            if (frame%4==0) //so that enemy moves every 4 frames
+            if (frame%20==0) //so that enemy moves every 4 frames
                 enemy_move_compute(enemy,&phantom_left,&phantom_rig);
 
             collision(player_bullet,enemy);
 
             draw_player(&player);       //update player position
             draw_struct_enemy(enemy);
-
-
             draw_player_bullet(player_bullet); //draws player bullet
+
+
             //printf("\n");
             //gotoxy(1,26);
 
@@ -141,7 +107,7 @@ void main()
 
             gotoxy(80,2);
             printf("frame: %d Score:%d", ++frame,score);
-            Sleep(50); //frame rate control
+            Sleep(0); //frame rate control
         }
 
     if(score==300) printf("Congrats You won");                  //score not implemented.....yet
@@ -165,10 +131,11 @@ void init_struct_enemy(struct object enemy[],struct object *phantom_left,struct 
         }
 
     }
-    phantom_left->x  = 5;
-    phantom_rig->x = 55;
-    phantom_left->y  = 6;
-    phantom_rig->y = 6;
+
+    phantom_left-> x  = 5;
+    phantom_rig -> x  = 55;
+    phantom_left-> y  = 7;
+    phantom_rig -> y  = 7;
 
 }
 
@@ -233,7 +200,41 @@ void draw_init_splash()
 
         gotoxy(1,26);
 }
+void enemy_move_compute(struct object enemy[],struct object *phantom_left,struct object *phantom_rig)
+{
+    int i;
+    phantom_left->x +=enemy_dir_x;
+    phantom_rig->x  +=enemy_dir_x;
+            gotoxy(2,27);
+            printf("phantom l x :%d",phantom_left->x);
+            printf("phantom r x :%d",phantom_rig->x);
 
+        if (phantom_left->x<1)
+        {   gotoxy(1,26);
+            //printf("phantom l x :%d",phantom_left->x);
+            enemy_dir_y=1;
+            enemy_dir_x=1;
+            phantom_rig->y+=1;
+        }
+        if (phantom_rig->x>56)
+        {
+            enemy_dir_y=1;
+            enemy_dir_x=-1;
+            phantom_rig->y+=1;
+        }
+
+    for (i=0;i<=75;i++)
+    {   enemy[i].last_x=enemy[i].x;
+        enemy[i].last_y=enemy[i].y;
+        enemy[i].x += enemy_dir_x;
+        enemy[i].y += enemy_dir_y;
+    }
+
+    enemy_dir_y=0;
+
+    if (phantom_rig->y==(height))
+        gameover=1;
+}
 
 void draw_player(struct object *player)
 {
@@ -248,9 +249,9 @@ void draw_player(struct object *player)
 
 void input()
 {
-if(_kbhit())
-{
-switch(_getch())
+    if(_kbhit())
+    {
+    switch(_getch())
 {                           //if user presses stuff then only getch() activates and hence takes input
 case 'a':
 dir_player=-1;
