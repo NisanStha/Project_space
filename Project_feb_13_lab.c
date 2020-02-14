@@ -20,7 +20,6 @@ void gotoxy(short x, short y)
     int player_max_bullet=3;
     int enemy_dir_y=0;
     int enemy_dir_x=1;
-    //char buffer_clearer[100];
 
 typedef struct bullet
 {
@@ -40,6 +39,8 @@ typedef struct object
 void enemy_move_compute(struct object enemy[],struct object *phantom_left,struct object *phantom_rig)
 {
     int i;
+    phantom_left->x +=enemy_dir_x;
+    phantom_rig->x  +=enemy_dir_x;
             gotoxy(2,27);
             printf("phantom l x :%d",phantom_left->x);
             printf("phantom r x :%d",phantom_rig->x);
@@ -49,14 +50,14 @@ void enemy_move_compute(struct object enemy[],struct object *phantom_left,struct
             //printf("phantom l x :%d",phantom_left->x);
             enemy_dir_y=1;
             enemy_dir_x=1;
+            phantom_rig->y+=1;
         }
         if (phantom_rig->x>56)
         {
             enemy_dir_y=1;
             enemy_dir_x=-1;
+            phantom_rig->y+=1;
         }
-    phantom_left->x +=enemy_dir_x;
-    phantom_rig->x  +=enemy_dir_x;
 
     for (i=0;i<=75;i++)
     {   enemy[i].last_x=enemy[i].x;
@@ -64,48 +65,48 @@ void enemy_move_compute(struct object enemy[],struct object *phantom_left,struct
         enemy[i].x += enemy_dir_x;
         enemy[i].y += enemy_dir_y;
     }
-    phantom_rig->y+=enemy_dir_y;
-    phantom_left->y+=enemy_dir_y;
+
     enemy_dir_y=0;
-    if (phantom_rig->y==(height-1))
+
+    if (phantom_rig->y==(height))
         gameover=1;
 }
 void main()
 {
     int i,j;
-    struct bullet player_bullet[player_max_bullet];
     struct object player;
     struct object enemy[76];
     struct object phantom_left;
     struct object phantom_rig;
+    struct bullet player_bullet[player_max_bullet+2];
+
     init_struct_enemy(enemy,&phantom_left,&phantom_rig);
     draw_init_splash();      // Border and get ready
 
     player.x=40;             // player position initialization
     player.y=24;             // player position initialization
 
-    for(i=1 ; i <= player_max_bullet ; i++)
+    /*for(i=1 ; i <= player_max_bullet ; i++)
     {
         player_bullet[i].used_or_not=0;            //empties all player bullet slot
         player_bullet[i].x=0;
         player_bullet[i].y=0;
         player_bullet[i].dead=0;
-    }
-    phantom_left.x  = 5;
-    phantom_rig.x = 55;
-    phantom_left.y  = 6;
-    phantom_rig.y = 6;
+    }*/
+
     while(!gameover)
         {
-            if(player.last_x != player.x)
-            draw_player(&player);       //update player position
+            input();                    //take input
+            if (frame%4==0) //so that enemy moves every 4 frames
+                enemy_move_compute(enemy,&phantom_left,&phantom_rig);
 
+            collision(player_bullet,enemy);
+
+            draw_player(&player);       //update player position
             draw_struct_enemy(enemy);
 
-            //if (frame%1==0)
-                enemy_move_compute(enemy,&phantom_left,&phantom_rig);
+
             draw_player_bullet(player_bullet); //draws player bullet
-            input();                    //take input
             //printf("\n");
             //gotoxy(1,26);
 
@@ -128,7 +129,7 @@ void main()
 
                 //display no of bullets successfully fired in game
                 gotoxy(1,26);
-                printf("shot: %d",++bullet_shot);
+                printf("Shots fired: %d ",++bullet_shot);
             }
 
             shoot=0;                                        //resets shooting status for player
@@ -138,9 +139,8 @@ void main()
             printf(" \n  bullet status:%d=%d",j,player_bullet[j].used_or_not);
 
 
-            collision(player_bullet,enemy);
-            gotoxy(80,26);
-            printf("frame: %d", ++frame);
+            gotoxy(80,2);
+            printf("frame: %d Score:%d", ++frame,score);
             Sleep(50); //frame rate control
         }
 
@@ -165,6 +165,10 @@ void init_struct_enemy(struct object enemy[],struct object *phantom_left,struct 
         }
 
     }
+    phantom_left->x  = 5;
+    phantom_rig->x = 55;
+    phantom_left->y  = 6;
+    phantom_rig->y = 6;
 
 }
 
@@ -173,12 +177,12 @@ void draw_struct_enemy(struct object enemy[])
     int i;
     for (i=1;i<=75;i++)
     {
+            gotoxy(enemy[i].last_x,enemy[i].last_y);
+            printf(" ",157);
         if (enemy[i].life != 0)
         {
             gotoxy(enemy[i].x,enemy[i].y);
             printf("%c",157);
-            gotoxy(enemy[i].last_x,enemy[i].last_y);
-            printf(" ",157);
         }
     }
     gotoxy(1,26);
@@ -217,7 +221,7 @@ void draw_init_splash()
             else printf("%c",205);
         }
 
- /* for(i=0;i<5;i++)                //Splash screen "get ready!".
+  for(i=0;i<5;i++)                //Splash screen "get ready!".
     {
         gotoxy(30,10);
         printf("GET READY!!!");
@@ -226,20 +230,19 @@ void draw_init_splash()
         printf("            ");
         Sleep(50);
     }
-*/
+
         gotoxy(1,26);
 }
 
 
 void draw_player(struct object *player)
 {
-   if (player->x != player->last_x)
-   {
-        gotoxy(player->x,player->y);
-        printf("%c",142);
+
         gotoxy(player->last_x,player->y);
         printf(" ");
-    }
+        gotoxy(player->x,player->y);
+        printf("%c",142);
+    //
     gotoxy(1,26);
 }
 
@@ -337,7 +340,7 @@ void collision(struct bullet player_bullet[],struct object enemy[])
             by=player_bullet[bc].y;
 
             if(ex==bx && ey==by && player_bullet[bc].dead == 0 && enemy[ec].life==1)
-            {
+            {   score+=10;
                 player_bullet[bc].dead=1;
                 enemy[ec].life=0;
             }
