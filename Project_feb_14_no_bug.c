@@ -8,6 +8,13 @@ void gotoxy(short x, short y)
     SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE),pos);
 
 }
+void fullscreen()
+{
+keybd_event(VK_MENU,0x38,0,0);
+keybd_event(VK_RETURN,0x1c,0,0);
+keybd_event(VK_RETURN,0x1c,KEYEVENTF_KEYUP,0);
+keybd_event(VK_MENU,0x38,KEYEVENTF_KEYUP,0);
+}
     long frame=0;
     int gameover=0;
     int pause=0;
@@ -50,6 +57,7 @@ void main()
     struct bullet player_bullet[100]; //player bullet (100 defined to avoid a struct array overflow error
     player.x=40;            // player position initialization
     player.y=height-1;      // player position initialization
+    fullscreen();
     init_struct_enemy(enemy,&phantom_left,&phantom_rig);    //initializes position of all enemies
 
 
