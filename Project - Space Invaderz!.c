@@ -61,6 +61,9 @@ void init_bullet(struct bullet player_bullet[])
         player_bullet[i].used_or_not=0;
         player_bullet[i].dead=0;
     }
+    player_bullet_used=0;
+    bullet_shot=0;
+
 }
 void init_struct_enemy(struct object enemy[],struct object *phantom_left,struct object *phantom_rig)
 {
@@ -518,10 +521,9 @@ void main()
     init_bullet(player_bullet);
     player.x=40;            // player position initialization
     player.y=height-1;      // player position initialization
-    score = 0;
-    frame = 1;
-    pause = 0;
-    bullet_shot=0;
+    score = 0;              //reset score
+    frame = 1;              //reset frame count
+    pause = 0;              //reset pause status
     draw_init_splash();                                     // Border and get ready
     if (ending==1)
         goto end;
@@ -542,7 +544,7 @@ void main()
                 enemy_move_compute(enemy,&phantom_left,&phantom_rig);   //changes position of enemy and phantom object
 
             input();            //take input
-            fflush(stdin);                      //clear input buffer
+            fflush(stdin);      //clear input buffer
 
             if (pause==1)
             {
@@ -579,21 +581,21 @@ void main()
             gotoxy(2,2);
             printf("Frame: %d | Score:%d", ++frame,score);
 
-            Sleep(5); //frame rate control
+            Sleep(25); //frame rate control
         }
     gotoxy(26,4);
     printf("                                                          ");
     gotoxy(26,5);
     if(score==750)
     {
-        printf("          Congrats You won           ");
+        printf("----------------------Congrats You WON!!!-----------------");
     }
     else
     {
-        printf("-------------------------GAME OVER!!----------------------");
+        printf("-------------------------GAME OVER!!!---------------------");
+    }
         gotoxy(26,6);
         printf("------------------------SCORE IS: %3d---------------------",score);
-    }
     gotoxy(26,7);
     printf("                                                          ");
     gotoxy(40,8);
