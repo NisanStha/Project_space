@@ -3,27 +3,27 @@
 #include <Windows.h>
 
     char difficulty[10]="Medium";
-    long frame=1;
-    int bullet_shot=0;
-    int score=0;
-    int moving_frame=10;
-    int gameover=0;
-    int pause=0;
-    int width=60;
-    int height=40;
-    int shoot=0;
-    int player_bullet_used=0;
-    int player_max_bullet=3;
-    int dir_player=0;           //direction of movement
-    int enemy_dir_y=0;          //direction of movement
-    int enemy_dir_x=1;          //direction of movement
-    int ending=0;
+    long frame=1;                   //current game loop
+    int bullet_shot=0;              //total bullets fired in game
+    int score=0;                    //for every enemy score = +10
+    int moving_frame=10;            //No. of frames after which enemy will move
+    int gameover=0;                 //if 1 game loop is broken
+    int pause=0;                    //if 1 game is paused
+    int width=60;                   //width of central game play console
+    int height=40;                  //height of game border
+    int shoot=0;                    //if 1 checks if player is allowed to shoot
+    int player_bullet_used=0;       //no of active bullet on screen
+    int player_max_bullet=3;        // maximum no of bullet available at a time
+    int dir_player=0;           //direction of movement of player
+    int enemy_dir_y=0;          //direction of movement of enemy vertically
+    int enemy_dir_x=1;          //direction of movement of enemy horizontally
+    int ending=0;               //if 1 skips to end the program
 
 typedef struct bullet
 {
     int x,y;                //coordinates
     int last_y;             //last position to be cleared
-    int dead;               //if 1 initiates kill status
+    int dead;               //if 1 initiates kill/bullet freezing algorithm
     int used_or_not;        //bullet slot used or not
 };
 
@@ -50,21 +50,6 @@ keybd_event(VK_RETURN,0x1c,KEYEVENTF_KEYUP,0);
 }
 
 
-
-void init_bullet(struct bullet player_bullet[])
-{
-    int i;
-    for (i=1;i<10;i++)
-    {
-        player_bullet[i].x=0;
-        player_bullet[i].y=0;
-        player_bullet[i].used_or_not=0;
-        player_bullet[i].dead=0;
-    }
-    player_bullet_used=0;
-    bullet_shot=0;
-
-}
 void init_struct_enemy(struct object enemy[],struct object *phantom_left,struct object *phantom_rig)
 {
     int c,i=5,j=3;
@@ -76,20 +61,34 @@ void init_struct_enemy(struct object enemy[],struct object *phantom_left,struct 
         enemy[c].y =j;
         enemy[c].last_x =enemy[c].x ; //to prevent flicker if not initialized
         enemy[c].last_y =enemy[c].y ;
-        if (c%25==0)
+        if (c%25==0)                    //after every 25 enemies setup x position reset but y increased
         {
             i=5;
             j+=2;
         }
-
     }
-
-    phantom_left-> x  = enemy[1].x;
-    phantom_rig -> x  = enemy[25].x;
+    phantom_left-> x  = enemy[51].x;    //initialize phantom as bottom left and bottom right enemies
     phantom_left-> y  = enemy[51].y;
+    phantom_rig -> x  = enemy[75].x;
     phantom_rig -> y  = enemy[75].y;
 
 }
+
+void init_bullet(struct bullet player_bullet[])         //empties every value of all bullets
+{
+    int i;
+    for (i=1;i<10;i++)
+    {
+        player_bullet[i].x=0;
+        player_bullet[i].y=0;
+        player_bullet[i].used_or_not=0;
+        player_bullet[i].dead=0;
+    }
+    player_bullet_used=0;                               //empties active bullet count for new game
+    bullet_shot=0;                                      //reset no. of bullet shot for new game
+
+}
+
 void draw_init_splash()
 {
     int i,j;
@@ -153,23 +152,24 @@ void draw_init_splash()
     gotoxy(30,26);
     printf("IIIII N   N   V    A   A DDDD  EEEEE R   R ZZZZZ  !!\n");
 
-    main_menu();
+    main_menu();                //calls main menu displaying function
 
     gotoxy(45,14);
-    if(ending==0)
+    if(ending==0)               //i.e. if game not quited
         printf("    GET READY!!!   ");
     else
-        printf("Quitting Please Wait");
-    Sleep(500);
+        printf("Quitting Please Wait"); //if game quited
+    Sleep(500);                         //delay
     gotoxy(45,14);
-    printf("                    ");
-    Sleep(500);
+    printf("                    ");     //clear message
+    Sleep(500);                         //delay
 
 }
+
 void main_menu(){
         char ch;
         int i,j,switch_complete=0;
-        for(i=26;i<84;i++)
+        for(i=26;i<84;i++)                  //clears certain portion of screen
         {
             for(j=5; j<15; j++)
             {
@@ -177,7 +177,7 @@ void main_menu(){
                 printf(" ");
             }
         }
-        gotoxy(40,9);
+        gotoxy(40,9);                           //display options
         printf("Enter number to do what is listed:");
         gotoxy(40,10);
         printf("1.Play Game");
@@ -189,14 +189,14 @@ void main_menu(){
         while(switch_complete!=1)
         {
             ch=getch();
-            switch(ch)
+            switch(ch)                  //to do as selected option requires
             {
                 case '1':
                     clear_console(); //clears loading screen
                     switch_complete = 1;
                     break;
                 case '2':
-                    ch = difficulty_select();
+                    difficulty_select(); //call difficulty select(); to Display difficulty option
                     switch_complete = 1;
                     break;
                 case '3':
@@ -211,9 +211,10 @@ void main_menu(){
 }
 
 void difficulty_select()
-{   int i,j,switch_complete=0;
+{
+    int i,j,switch_complete=0;
     char ch;
-    for(i=26;i<84;i++)
+    for(i=26;i<84;i++)                  //clears certain portion of screen
         {
             for(j=5; j<15; j++)
             {
@@ -240,38 +241,38 @@ void difficulty_select()
             switch(ch)
             {
                 case '1':
-                    moving_frame=16;
-                    player_max_bullet=5;
-                    strcpy(difficulty,"Easy");
+                    moving_frame=16;            //so that enemies move every 16 frames
+                    player_max_bullet=5;        //limit max bullet allowed
+                    strcpy(difficulty,"Easy");  //copy difficulty status to show in main menu
                     switch_complete = 1;
-                    break; //continue without doing anything
+                    break;
                 case '2':
-                    moving_frame=10;
-                    player_max_bullet=4;
-                    strcpy(difficulty,"Medium");
+                    moving_frame=10;                //so that enemies move every 16 frames
+                    player_max_bullet=4;            //limit max bullet allowed
+                    strcpy(difficulty,"Medium");    //copy difficulty status to show in main menu
                     switch_complete = 1;
                     break;
                 case '3':
-                    moving_frame=6;
-                    player_max_bullet=3;
-                    strcpy(difficulty,"Hard");
+                    moving_frame=6;                 //so that enemies move every 16 frames
+                    player_max_bullet=3;            //limit max bullet allowed
+                    strcpy(difficulty,"Hard");      //copy difficulty status to show in main menu
                     switch_complete = 1;
                     break;
                 case '4':
-                    moving_frame=3;
-                    player_max_bullet=2;
-                    strcpy(difficulty,"Impossible!");
+                    moving_frame=3;                     //so that enemies move every 16 frames
+                    player_max_bullet=2;                //limit max bullet allowed
+                    strcpy(difficulty,"Impossible!");   //copy difficulty status to show in main menu
                     switch_complete = 1;
                     break;
                 case '5':
-                    moving_frame=26;
-                    strcpy(difficulty,"Baby mode");
-                    player_max_bullet=8;
+                    moving_frame=26;                    //so that enemies move every 16 frames
+                    strcpy(difficulty,"Baby mode");     //limit max bullet allowed
+                    player_max_bullet=8;                //copy difficulty status to show in main menu
                     switch_complete = 1;
                     break;
-                case '9':
-                    moving_frame=2;
-                    strcpy(difficulty,"debug");
+                case '9':                           //so that enemies move every 16 frames
+                    moving_frame=2;                 //limit max bullet allowed
+                    strcpy(difficulty,"debug");     //copy difficulty status to show in main menu
                     player_max_bullet=8;
                     switch_complete = 1;
                     break;
@@ -280,13 +281,13 @@ void difficulty_select()
 
             }
         }
-    main_menu(); //returns to menu screen
+    main_menu(); //recalls main_menu(); as if it were a recursion to menu screen
 }
 
-void clear_console()
+void clear_console()                //clears certain portion of screen
 {
     int i,j;
-    for(i=26;i<84;i++)
+    for(i=26;i<84;i++)              //clears certain portion of screen
         {
             for(j=2; j<35 ; j++)
             {
@@ -296,93 +297,44 @@ void clear_console()
         }
 }
 
-void draw_struct_enemy(struct object enemy[])
+void enemy_move_compute(struct object enemy[],struct object *phantom_left,struct object *phantom_rig) //compute new position of enemy
 {
     int i;
+        if (phantom_left-> x <= (25+1))     //checking left side border collision
+        {
+            enemy_dir_y = 1;                //vertical velocity 1
+            enemy_dir_x = 1;                //change horizontal velocity
+        }
+        if (phantom_rig-> x >= (25+width-2))    //checking right side border collision
+        {
+            enemy_dir_y     = 1;            //vertical velocity 1
+            enemy_dir_x     = -1;           //change horizontal velocity
+        }
+
     for (i=1;i<=75;i++)
     {
-        if(enemy[i].y<height)
-            {
-                gotoxy(enemy[i].last_x,enemy[i].last_y);
-                printf(" ",157);
-            }
-
-        if (enemy[i].life != 0)
-        {
-            gotoxy(enemy[i].x,enemy[i].y);
-            printf("%c",157);
-        }
+        enemy[i].last_x=enemy[i].x; //store last position before updating
+        enemy[i].last_y=enemy[i].y; //store last position before updating
+        enemy[i].x += enemy_dir_x;  //update x position
+        enemy[i].y += enemy_dir_y;  //update x position
     }
-}
-
-void shoot_check(struct bullet player_bullet[],struct object *player)
-{
-    int i;
-    if (shoot==1 && player_bullet_used < player_max_bullet) //to ensure limited bullet
-    {
-        player_bullet_used++;                           //increases counter which tracks no of active bullets
-        for(i=1;player_bullet[i].used_or_not==1;i++);   //finds empty bullet slot at i
-
-        if (player_bullet[i].used_or_not != 1)          //to ensure bullet is empty at i found
-        player_bullet[i].used_or_not=1;                 //changes empty bullet slot status to used
-
-        player_bullet_release(player_bullet,player,i); //Sets position & direction of fired bullet  and i= bullet index
-
-        //display no of bullets successfully fired in game
-        gotoxy(2,3);
-        printf("Shots fired: %d ",++bullet_shot);
-    }
-}
-
-void enemy_move_compute(struct object enemy[],struct object *phantom_left,struct object *phantom_rig)
-{
-    int i;
-        if (phantom_left-> x <= (25+1))
-        {
-            gotoxy(1,26);
-            enemy_dir_y = 1;
-            enemy_dir_x = 1;
-            phantom_rig->y += 1;
-        }
-        if (phantom_rig-> x >= (25+width-2))
-        {
-            enemy_dir_y     = 1;
-            enemy_dir_x     = -1;
-            phantom_rig->y += 1;
-        }
-
-    for (i=0;i<=75;i++)
-    {
-        enemy[i].last_x=enemy[i].x;
-        enemy[i].last_y=enemy[i].y;
-        enemy[i].x += enemy_dir_x;
-        enemy[i].y += enemy_dir_y;
-    }
-    phantom_left->x +=enemy_dir_x;
+    phantom_left->x +=enemy_dir_x;  //update position of phantom object
+    phantom_left->y += enemy_dir_y;
     phantom_rig->x  +=enemy_dir_x;
+    phantom_rig->y += enemy_dir_y;
 
-    enemy_dir_y=0;
+    enemy_dir_y=0;                  //reset y direction velocity
 
-    if (phantom_rig->y == height-1 )
+    if (phantom_rig->y == height-1 )    //if any enemy reaches bottom
         gameover=1;
-}
-
-void draw_player(struct object *player)
-{
-
-        gotoxy(player->last_x,player->y);
-        printf(" ");
-        gotoxy(player->x,player->y);
-        printf("%c",142);
-        gotoxy(1,26);
 }
 
 void input()
 {
-    if(_kbhit())
+    if(_kbhit())                    //if user presses stuff then only getch() activates and hence takes input
     {
         switch(getch())
-        {                           //if user presses stuff then only getch() activates and hence takes input
+        {
             case 'a':
                 dir_player=-1;
                 break;
@@ -410,31 +362,77 @@ void input()
 
 }
 
-
- void player_bullet_release(struct bullet player_bullet[],struct object *player, int i)
+void collision(struct bullet player_bullet[],struct object enemy[])
+{
+    int  ec,bc,ey,ex,bx,by;
+    for(ec=1;ec<=75;ec++)
     {
-        int j;
-        player_bullet[i].x = player->x;
-        player_bullet[i].y = (player->y-1);
+        ex=enemy[ec].x;                         //storing coordinate for easy view
+        ey=enemy[ec].y;                         //storing coordinate for easy view
+
+        for(bc=1;bc <= player_max_bullet;bc++)  //for checking each enemy with each bullet
+        {
+            bx=player_bullet[bc].x;             //storing coordinate for easy view
+            by=player_bullet[bc].y;             //storing coordinate for easy view
+
+            if(ex==bx && ey==by && player_bullet[bc].dead == 0 && enemy[ec].life==1)
+            {
+                score+=10;                  //basic score
+                enemy[ec].life=0;           //empty bullet
+                player_bullet[bc].dead=1;                   //initialize bullet freeing algorithm in draw_bullet
+                gotoxy(player_bullet[bc].x,player_bullet[bc].y);
+                printf("x");                                //replace last position of bullet with collision indicator
+
+            }
+        }
     }
+}
 
- void draw_player_bullet(struct bullet player_bullet[])
+void draw_player(struct object *player)
+{
+        gotoxy(player->last_x,player->y);   //clears last position
+        printf(" ");
+        gotoxy(player->x,player->y);        //prints player in new position
+        printf("%c",142);
+        gotoxy(1,26);
+}
+
+void draw_struct_enemy(struct object enemy[])       //to draw enemy if alive and clear last position of enemy
+{
+    int i;
+    for (i=1;i<=75;i++)
     {
-        int i,cursor_debug=1;
+        if(enemy[i].y<height)                   //unless enemy is outside border
+            {
+                gotoxy(enemy[i].last_x,enemy[i].last_y);    //goto last position and clear it
+                printf(" ",157);
+            }
+
+        if (enemy[i].life != 0)                 //i.e. if enemy is not dead
+        {
+            gotoxy(enemy[i].x,enemy[i].y);      //goto current position and print enemy
+            printf("%c",157);
+        }
+    }
+}
+
+void draw_player_bullet(struct bullet player_bullet[])
+    {
+        int i;
         for(i=1;i<=player_max_bullet;i++)
         {
-            if (player_bullet[i].used_or_not==1)
+            if (player_bullet[i].used_or_not==1) //i.e.if bullet active
             {
                 player_bullet[i].last_y=player_bullet[i].y; //store current line of bullet in temp
                 player_bullet[i].y -= 1;  //update bullet one step up
 
                 gotoxy(player_bullet[i].x,player_bullet[i].last_y); //clear last position of bullet
                 printf(" ");
-                gotoxy(player_bullet[i].x,player_bullet[i].y);      //print new positon
+                gotoxy(player_bullet[i].x,player_bullet[i].y);      //print new position
                 printf("%c",140);
 
                 if ( player_bullet[i].y <= 2)
-                    player_bullet[i].dead=1;
+                    player_bullet[i].dead=1;                //out of bound check
             }
 
             //if dead remove||free bullet
@@ -450,61 +448,60 @@ void input()
             }
 
         }
-        gotoxy(1,26);
     }
 
-void collision(struct bullet player_bullet[],struct object enemy[])
-{
-    int  ec,bc,ey,ex,bx,by;
-    for(ec=1;ec<=75;ec++)
-    {
-        ex=enemy[ec].x;     //storing coordinate for easy view
-        ey=enemy[ec].y;     //storing coordinate for easy view
-
-        for(bc=1;bc <= player_max_bullet;bc++)   //for checking each enemy with each bullet
-        {
-            bx=player_bullet[bc].x;     //storing coordinate for easy view
-            by=player_bullet[bc].y;     //storing coordinate for easy view
-
-            if(ex==bx && ey==by && player_bullet[bc].dead == 0 && enemy[ec].life==1)
-            {
-                score+=10;                  //basic score
-                enemy[ec].life=0;           //empty bullet
-                player_bullet[bc].dead=1;   //initialize bullet freeing algorithm in draw_bullet
-                gotoxy(player_bullet[bc].x,player_bullet[bc].y);
-                printf("x");                //replace last position of bullet with collision indicator
-
-            }
-        }
-    }
-}
 void phantom_update(struct object enemy[],struct object *phantom_left,struct object *phantom_rig)
 {
     int bottom_alive=0;
     int mid_alive=0;
-    int top_alive=0;
     int i;
     for (i=26;i<=50;i++)
     {
         if(enemy[i].life!=0)
-            mid_alive++;
+            mid_alive++;        //at end is 0 only if all mid row enemies are dead
     }
     for (i=51;i<=75;i++)
     {
         if(enemy[i].life!=0)
-            bottom_alive++;
+            bottom_alive++;     //at end is 0 only if all bottom row enemy are dead
     }
     if(bottom_alive==0)
         {
-            phantom_left -> y = enemy[26].y;
+            phantom_left -> y = enemy[26].y;    //if all bottom dead change phantom to mid row
             phantom_rig  -> y = enemy[50].y;
             if(mid_alive==0)
             {
-                phantom_left -> y = enemy[1].y;
+                phantom_left -> y = enemy[1].y;     //if mid also dead change phantom to top row
                 phantom_rig  -> y = enemy[25].y;
             }
         }
 }
+
+void shoot_check(struct bullet player_bullet[],struct object *player)   //to check if bullet can be shot
+{
+    int i;
+    if (shoot==1 && player_bullet_used < player_max_bullet) //to ensure limited bullet
+    {
+        player_bullet_used++;                           //increases counter which tracks no of active bullets
+        for(i=1;player_bullet[i].used_or_not==1;i++);   //finds empty bullet slot at i
+
+        if (player_bullet[i].used_or_not != 1)          //to ensure bullet is empty at i found
+        player_bullet[i].used_or_not=1;                 //changes empty bullet slot status to used
+
+        player_bullet_release(player_bullet,player,i); //Sets position & direction of fired bullet  and i= empty bullet index
+
+        gotoxy(2,3);
+        printf("Shots fired: %d ",++bullet_shot);       //display no of bullets successfully fired in game and increase it
+    }
+}
+
+ void player_bullet_release(struct bullet player_bullet[],struct object *player, int i) //initialize bullet after checking in shoot_check()
+    {
+        int j;
+        player_bullet[i].x = player->x;
+        player_bullet[i].y = (player->y-1);     //one step above player
+    }
+
 
 void main()
 {
@@ -518,16 +515,15 @@ void main()
     fullscreen();
     start:
     init_struct_enemy(enemy,&phantom_left,&phantom_rig);    //initializes position of all enemies
-    init_bullet(player_bullet);
+    init_bullet(player_bullet);                             //empties bullet properties
     player.x=40;            // player position initialization
     player.y=height-1;      // player position initialization
     score = 0;              //reset score
     frame = 1;              //reset frame count
     pause = 0;              //reset pause status
-    draw_init_splash();                                     // Border and get ready
-    if (ending==1)
+    draw_init_splash();     // Border and get ready
+    if (ending==1)          // 3 pressed on main menu
         goto end;
-    fflush(stdin);          //clear input buffer
     gotoxy(87,2);
     printf("Press P to Pause");
     gotoxy(87,3);
@@ -538,6 +534,7 @@ void main()
     printf("Press D to Move Right");
     gotoxy(87,6);
     printf("Press S to Shoot");
+    fflush(stdin);          //clear input buffer
     while(!gameover && score < 750)
         {
             if (frame % moving_frame==0)     //so that enemy moves every (moving_frame) frames
@@ -562,7 +559,7 @@ void main()
             draw_player_bullet(player_bullet);  //draws player bullet
             phantom_update(enemy,&phantom_left,&phantom_rig);
 
-            if (score>750)
+            if (score>650)
                 moving_frame = 3;               //last 10 enemy move with very high speed.
 
             //compute position of player
@@ -575,7 +572,9 @@ void main()
                     dir_player=0;               //reset move direction
                 }
             }
+            //shooting algorithm
             shoot_check(player_bullet, &player);//compute shoot status of player
+
             shoot=0;                    //resets shooting status for player
 
             gotoxy(2,2);
