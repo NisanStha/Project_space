@@ -205,8 +205,7 @@ void main_menu(){
                     switch_complete = 1;
                     ending=1;
                     break;
-
-            }
+         }
         }
 }
 
@@ -378,7 +377,7 @@ void collision(struct bullet player_bullet[],struct object enemy[])
             if(ex==bx && ey==by && player_bullet[bc].dead == 0 && enemy[ec].life==1)
             {
                 score+=10;                  //basic score
-                enemy[ec].life=0;           //empty bullet
+                enemy[ec].life=0;           //kill enemy
                 player_bullet[bc].dead=1;                   //initialize bullet freeing algorithm in draw_bullet
                 gotoxy(player_bullet[bc].x,player_bullet[bc].y);
                 printf("x");                                //replace last position of bullet with collision indicator
@@ -572,9 +571,9 @@ void main()
                     dir_player=0;               //reset move direction
                 }
             }
+
             //shooting algorithm
             shoot_check(player_bullet, &player);//compute shoot status of player
-
             shoot=0;                    //resets shooting status for player
 
             gotoxy(2,2);
@@ -599,8 +598,9 @@ void main()
     printf("                                                          ");
     gotoxy(40,8);
     printf("Press any key to continue");
-    getch();
     gameover=0;
+    getch();
+    Sleep(300);
     goto start;
 
     end:
